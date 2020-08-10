@@ -15,7 +15,7 @@ These instructions will get you a copy of the project up and running on your dev
 * Open /src/cf-thermostat/cf-thermostat.ino
 * Upload your project
 
-For more details visit [Wiki](https://github.com/caiofrota/cf-security-api/wiki)
+For more details our visit [Wiki](https://github.com/cftechsol/cf-iot-thermostat/wiki).
 
 ### Pre-requisites
 
