@@ -30,7 +30,7 @@ For more details our visit [Wiki](https://github.com/cftechsol/cf-iot-thermostat
 * [WiFiManager by tzapu version 0.15.0](https://github.com/tzapu/WiFiManager/releases/tag/0.15.0)
 * [ArduinoJson by Benoit Blanchon version 6.16.1](https://github.com/bblanchon/ArduinoJson/releases/tag/v6.16.1)
 * [ThingsBoard by ThingsBoard Team version 0.4](https://github.com/thingsboard/ThingsBoard-Arduino-MQTT-SDK/releases/tag/v0.4.0)
-** [PubSubClient by Nick O'Leary version 2.6](https://github.com/knolleary/pubsubclient/releases/tag/v2.6)
+* [PubSubClient by Nick O'Leary version 2.6](https://github.com/knolleary/pubsubclient/releases/tag/v2.6)
 
 ### Hardware
 * ESP8266 (NodeMCU 1.0 ESP-12E or ESP01)
