@@ -14,6 +14,8 @@
 #include <ArduinoJson.h>                                                        // Arduino Json.
 #include <ThingsBoard.h>                                                        // Things Board.
 
+boolean debug = true;
+
 // DHT Sensor Config.
 //#define DHT0TYPE         DHT11                                                  // Type of sensor. DHT11.
 #define DHT0TYPE         DHT22                                                  // Type of sensor. DHT22.
@@ -69,6 +71,7 @@ void setup() {
   //wifiManager.resetSettings();                                                  // Reset config. Uncomment this line to reset settings at boot.
 
   // Wi-Fi Manager custom parameters - Start.
+  wifiManager.setDebugOutput(debug);                                            // Set if it's in debug mode.
   loadWiFiCustomParameters();                                                   // Load Wi-Fi custom parameters.
   wifiManager.setSaveConfigCallback(saveWiFiParametersCallback);                // Set callback to save Wi-Fi Manager custom params.
   wifiManager.addParameter(&pDeviceName);                                       // Add Device Name param.
@@ -105,7 +108,7 @@ boolean getDHT0Data(TBData *data) {
   data->dht0.temperature = dht0.readTemperature();
   data->dht0.humidity = dht0.readHumidity();
   if (isnan(data->dht0.humidity) || isnan(data->dht0.temperature)) {
-    Serial.println("Failed to read from DHT sensor!");
+    serialPrintLn("Failed to read from DHT sensor!");
     return false;
   }
   return true;
@@ -116,10 +119,10 @@ boolean getDHT0Data(TBData *data) {
  */
 void thingsBoardSendData(TBData *data) {
   if (millis() - tbLastSend > 1000) {
-    Serial.println("Sending data to server...");
+    serialPrintLn("Sending data to server...");
     if (getDHT0Data(data)) {
-      Serial.println("Humidity: " + String(data->dht0.humidity) + "%");
-      Serial.println("Temperature: " + String(data->dht0.temperature) + "c");
+      serialPrintLn("Humidity: " + String(data->dht0.humidity) + "%");
+      serialPrintLn("Temperature: " + String(data->dht0.temperature) + "c");
       tb.sendTelemetryFloat("humidity", data->dht0.humidity);
       tb.sendTelemetryFloat("temperature", data->dht0.temperature);
     }
@@ -133,12 +136,12 @@ void thingsBoardSendData(TBData *data) {
  */
 void thingsBoardListener() {
   if (!tb.connected()) {
-    Serial.print("Connecting to ThingsBoard node... ");
+    serialPrint("Connecting to ThingsBoard node... ");
     if (tb.connect(serverURL, token)) {
-      Serial.println("Ok.");
+      serialPrintLn("Ok.");
     } else {
-      Serial.println("Fail... ");
-      Serial.println("Retrying in " + String(TBTTR/1000) + " seconds.");
+      serialPrintLn("Fail... ");
+      serialPrintLn("Retrying in " + String(TBTTR/1000) + " seconds.");
       delay(TBTTR);
       return;
     }
@@ -153,7 +156,7 @@ void wifiManagerServerListener() {
   String header;                                                                // Variable to store the HTTP request.
   WiFiClient client = server.available();                                       // Listen for incoming clients.
   if (client) {                                                                 // True if a new client connects.
-    Serial.println("New Client.");
+    serialPrintLn("New Client.");
     String currentLine = "";                                                    // Make a String to hold incoming data from the client.
     while (client.connected()) {                                                // Loop while the client is connected.
       if (client.available()) {                                                 // If there's bytes to read from the client,
@@ -171,7 +174,7 @@ void wifiManagerServerListener() {
 
             // Actions.
             if (header.indexOf("GET /reset") >= 0) {
-              Serial.println("Reseting device.");
+              serialPrintLn("Reseting device.");
               wifiManager.resetSettings();                                      // Reset Wi-Fi Manager settings.
               ESP.restart();                                                    // Restart device.
             }
@@ -213,7 +216,7 @@ void wifiManagerServerListener() {
     header = "";
     // Close the connection.
     client.stop();
-    Serial.println("Client disconnected.");
+    serialPrintLn("Client disconnected.");
   }
 }
 
@@ -221,18 +224,18 @@ void wifiManagerServerListener() {
  * Load Wi-Fi Manager custom parameters.
  */
 void loadWiFiCustomParameters() {
-  Serial.print("Mount FS... ");
+  serialPrint("Mount FS... ");
   if (SPIFFS.begin()) {
-    Serial.println("Ok.");
-    Serial.println("Loading Wi-Fi custom parameters.");
+    serialPrintLn("Ok.");
+    serialPrintLn("Loading Wi-Fi custom parameters.");
 
     // Open file for reading.
     String filePath = "/config.json";
     if (SPIFFS.exists(filePath)) {
-      Serial.print("Open file for reading... ");
+      serialPrint("Open file for reading... ");
       File file = SPIFFS.open(filePath, "r");
       if (file) {
-        Serial.println("Ok.");
+        serialPrintLn("Ok.");
         
         // Create Json objects.
         DynamicJsonDocument doc(1024);
@@ -240,8 +243,8 @@ void loadWiFiCustomParameters() {
         // Deserialize file into Json object.
         DeserializationError error = deserializeJson(doc, file);
         if (error) {
-          Serial.print("Fail to deserialize file. Code: ");
-          Serial.println(error.c_str());
+          serialPrint("Fail to deserialize file. Code: ");
+          serialPrintLn(error.c_str());
         }
 
         // Set custom parameters.
@@ -252,11 +255,11 @@ void loadWiFiCustomParameters() {
         // Close file.
         file.close();
       } else {
-        Serial.println("Fail.");
+        serialPrintLn("Fail.");
       }
     }
   } else {
-    Serial.println("Fail.");
+    serialPrintLn("Fail.");
   }
 }
 
@@ -270,14 +273,14 @@ void saveWiFiCustomParameters() {
     strlcpy(serverURL, pServerURL.getValue(), sizeof(serverURL));
     strlcpy(token, pToken.getValue(), sizeof(token));
     
-    Serial.println("Saving Wi-Fi custom parameters.");
+    serialPrintLn("Saving Wi-Fi custom parameters.");
 
     // Open file for writing.
     String filePath = "/config.json";
-    Serial.print("Open file for writing... ");
+    serialPrint("Open file for writing... ");
     File file = SPIFFS.open(filePath, "w");
     if (file) {
-      Serial.println("Ok.");
+      serialPrintLn("Ok.");
 
       // Create Json objects.
       DynamicJsonDocument doc(1024);
@@ -288,13 +291,13 @@ void saveWiFiCustomParameters() {
       doc["token"] = token;
 
       if (serializeJson(doc, file) == 0) {
-        Serial.println("Fail to serialize file.");
+        serialPrintLn("Fail to serialize file.");
       }
       
       // Close file.
       file.close();
     } else {
-      Serial.println("Fail.");
+      serialPrintLn("Fail.");
     }
   }
 }
@@ -303,6 +306,30 @@ void saveWiFiCustomParameters() {
  * Callback notifies you that it needs to save Wi-Fi Manager custom parameters. 
  */
 void saveWiFiParametersCallback() {
-  Serial.println("Should save params.");
+  serialPrintLn("Should save params.");
   saveWiFiCustomParametersFlag = true;
+}
+
+/**
+ * Calls Serial.println if it's in debug mode.
+ * 
+ * @param text Text.
+ */
+template <typename Generic>
+void serialPrintLn(Generic text) {
+  if (debug) {
+    Serial.println(text);
+  }
+}
+
+/**
+ * Calls Serial.print if it's in debug mode.
+ * 
+ * @param text Text.
+ */
+template <typename Generic>
+void serialPrint(Generic text) {
+  if (debug) {
+    Serial.print(text);
+  }
 }
