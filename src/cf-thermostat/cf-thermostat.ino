@@ -14,7 +14,7 @@
 #include <ArduinoJson.h>                                                        // Arduino Json.
 #include <ThingsBoard.h>                                                        // Things Board.
 
-boolean debug = true;
+boolean debug = true;                                                           // Debug mode flag.
 
 // DHT Sensor Config.
 //#define DHT0TYPE         DHT11                                                  // Type of sensor. DHT11.
